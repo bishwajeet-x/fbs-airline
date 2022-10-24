@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.flightapp.flights.dto.FlightScheduleDto;
@@ -26,6 +27,12 @@ public class FlightsController {
 	public ResponseEntity<List<FlightSchedule>> fetchAllFlights() {
 		System.out.println("Inside fetchAllFlights");
 		return ResponseEntity.ok(flightService.fetchAllFlights());
+	}
+
+	@GetMapping("/search")
+	public ResponseEntity<FlightSchedule> fetchFlightById(@RequestParam("id") long id) {
+		System.out.println("Inside fetchAllFlights");
+		return ResponseEntity.ok(flightService.fetchFlightById(id));
 	}
 	
 	@PostMapping("/")
