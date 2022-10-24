@@ -23,8 +23,7 @@ public class Airline {
 
 	public Airline() {}
 
-	public Airline(long airlineId, String airlineName, AirlineStatus airlineStatus) {
-		this.airlineId = airlineId;
+	public Airline(String airlineName, AirlineStatus airlineStatus) {
 		this.airlineName = airlineName;
 		this.airlineStatus = airlineStatus;
 	}
