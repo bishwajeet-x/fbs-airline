@@ -14,6 +14,8 @@ public interface AirlinesService {
 	Airline updateAirline(AirlineDto request);
 
 	Airline fetchAirlineById(int airlineId);
+
+	boolean deleteAirline(int airlineId);
 	
 
 }

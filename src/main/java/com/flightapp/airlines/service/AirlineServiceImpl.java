@@ -66,4 +66,16 @@ public class AirlineServiceImpl implements AirlinesService {
 		}
 	}
 
+	@Override
+	public boolean deleteAirline(int airlineId) {
+		try {
+			fetchAirlineById(airlineId);
+			airlinesRepo.deleteById(Long.valueOf(airlineId));
+			return true;
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new SomethingWentWrong("Could not delete airline!");
+		}
+	}
+
 }
