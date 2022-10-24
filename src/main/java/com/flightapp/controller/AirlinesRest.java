@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api")
 public class AirlinesRest {
 	
-	@GetMapping("/")
+	@GetMapping("/airline")
 	public List<String> findAllAirlines() {
 		System.out.println("Inside findAllAirlines");
 		return List.of("Indigo", "Vistara");
