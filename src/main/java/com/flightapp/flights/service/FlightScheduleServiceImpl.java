@@ -69,6 +69,7 @@ public class FlightScheduleServiceImpl implements FlightScheduleService {
 	@Override
 	public FlightSchedule createFlight(FlightScheduleDto flight) {
 		FlightSchedule newFlight = new FlightSchedule();
+		System.out.println("Flight Rdeq data:: "+flight.toString());
 		newFlight.setAirline(airlineRepo.findById(flight.getAirlineId()).get());
 		newFlight.setSource(flight.getSource());
 		newFlight.setDestination(flight.getDestination());
