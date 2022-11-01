@@ -8,10 +8,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.flightapp.flights.entity.FlightSchedule;
 
-public interface FlightScheduleRepo extends JpaRepository<FlightSchedule, Long> {
+public interface FlightScheduleRepo extends JpaRepository<FlightSchedule, String> {
 
 	public Optional<List<FlightSchedule>> findByStatus(int status);
-	public Optional<FlightSchedule> findByFlightId(long flightId);
-	public Optional<List<FlightSchedule>> findByScheduledForAndSourceIgnoreCaseAndDestinationIgnoreCaseAndAirlineAirlineStatusId(
+	public Optional<List<FlightSchedule>> findByStaAndSourceIgnoreCaseAndDestinationIgnoreCaseAndAirlineAirlineStatusId(
 			Date parse, String source, String destination, int statusId);
+	//public Optional<FlightSchedule> findByFlightScheduleFlightCode(String flightCode);
+	public Optional<FlightSchedule> findByFlightCode(String flightCode);
 }

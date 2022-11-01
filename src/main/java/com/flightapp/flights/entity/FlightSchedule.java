@@ -1,14 +1,19 @@
 package com.flightapp.flights.entity;
 
+import java.util.Collection;
 import java.util.Date;
 
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.ManyToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
 
 import com.flightapp.airlines.entity.Airline;
 
@@ -16,32 +21,38 @@ import com.flightapp.airlines.entity.Airline;
 @Table(name="flight_schedule")
 public class FlightSchedule {
 	
+	/*
+	 * @OneToOne(fetch = FetchType.EAGER) private FlightIdGenerationKey flightId;
+	 */
+	
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private long flightId;
+	@Column(name = "flight_code", length = 20)
+	private String flightCode;
 	
 	@OneToOne(fetch = FetchType.EAGER)
 	private Airline airline;
 	
-	private Date scheduledFor;
-	
-	private int scheduledTimeHour;
-	private int scheduledTimeMinutes;
+	private Date sta;
+	private Date eta;
+	private int flightHours;
 	
 	private String source;
 	private String destination;
 	
-	private double price;
+	@LazyCollection(LazyCollectionOption.FALSE)
+	@ManyToMany(cascade=CascadeType.ALL)
+	private Collection<FlightClass> flightClass;
 	
-	@OneToOne(fetch = FetchType.EAGER)
+	@LazyCollection(LazyCollectionOption.FALSE)
+	@OneToOne(cascade=CascadeType.ALL)
 	private FlightStatus status;
 
-	public long getFlightId() {
-		return flightId;
+	public String getFlightCode() {
+		return flightCode;
 	}
 
-	public void setFlightId(long flightId) {
-		this.flightId = flightId;
+	public void setFlightCode(String flightCode) {
+		this.flightCode = flightCode;
 	}
 
 	public Airline getAirline() {
@@ -52,28 +63,28 @@ public class FlightSchedule {
 		this.airline = airline;
 	}
 
-	public Date getScheduledFor() {
-		return scheduledFor;
+	public Date getSta() {
+		return sta;
 	}
 
-	public void setScheduledFor(Date scheduledFor) {
-		this.scheduledFor = scheduledFor;
+	public void setSta(Date sta) {
+		this.sta = sta;
 	}
 
-	public int getScheduledTimeHour() {
-		return scheduledTimeHour;
+	public Date getEta() {
+		return eta;
 	}
 
-	public void setScheduledTimeHour(int scheduledTimeHour) {
-		this.scheduledTimeHour = scheduledTimeHour;
+	public void setEta(Date eta) {
+		this.eta = eta;
 	}
 
-	public int getScheduledTimeMinutes() {
-		return scheduledTimeMinutes;
+	public int getFlightHours() {
+		return flightHours;
 	}
 
-	public void setScheduledTimeMinutes(int scheduledTimeMinutes) {
-		this.scheduledTimeMinutes = scheduledTimeMinutes;
+	public void setFlightHours(int flightHours) {
+		this.flightHours = flightHours;
 	}
 
 	public String getSource() {
@@ -92,12 +103,12 @@ public class FlightSchedule {
 		this.destination = destination;
 	}
 
-	public double getPrice() {
-		return price;
+	public Collection<FlightClass> getFlightClass() {
+		return flightClass;
 	}
 
-	public void setPrice(double price) {
-		this.price = price;
+	public void setFlightClass(Collection<FlightClass> flightClass) {
+		this.flightClass = flightClass;
 	}
 
 	public FlightStatus getStatus() {
@@ -110,11 +121,8 @@ public class FlightSchedule {
 
 	@Override
 	public String toString() {
-		return "FlightSchedule [flightId=" + flightId + ", airline=" + airline + ", scheduledFor=" + scheduledFor
-				+ ", scheduledTimeHour=" + scheduledTimeHour + ", scheduledTimeMinutes=" + scheduledTimeMinutes
-				+ ", source=" + source + ", destination=" + destination + ", price=" + price + ", status=" + status
-				+ "]";
+		return "FlightSchedule [flightCode=" + flightCode + ", airline=" + airline + ", sta=" + sta + ", eta=" + eta
+				+ ", flightHours=" + flightHours + ", source=" + source + ", destination=" + destination
+				+ ", flightClass=" + flightClass + ", status=" + status + "]";
 	}
-
-
 }

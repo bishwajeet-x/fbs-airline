@@ -10,11 +10,14 @@ import org.springframework.stereotype.Service;
 
 import com.flightapp.airlines.repo.AirlineStatusRepo;
 import com.flightapp.airlines.repo.AirlinesRepo;
+import com.flightapp.common.Constants;
+import com.flightapp.common.Utils;
 import com.flightapp.exception.IllegalInputException;
 import com.flightapp.exception.NotFoundException;
 import com.flightapp.exception.SomethingWentWrong;
 import com.flightapp.flights.dto.FlightScheduleDto;
 import com.flightapp.flights.dto.SearchFlightParams;
+import com.flightapp.flights.entity.FlightClass;
 import com.flightapp.flights.entity.FlightSchedule;
 import com.flightapp.flights.entity.FlightStatus;
 import com.flightapp.flights.repo.FlightScheduleRepo;
@@ -42,19 +45,19 @@ public class FlightScheduleServiceImpl implements FlightScheduleService {
 	}
 
 	@Override
-	public FlightSchedule fetchFlightById(long flightId) {
-		Optional<FlightSchedule> flight = flightRepo.findByFlightId(flightId);
+	public FlightSchedule fetchFlightByCode(String flightCode) {
+		Optional<FlightSchedule> flight = flightRepo.findByFlightCode(flightCode);
 		if(flight.isEmpty()) {
-			throw new NotFoundException("Flight id "+flightId+" was not found in the DB.");
+			throw new NotFoundException("Flight code "+flightCode+" was not found in the DB.");
 		}
 		return flight.get();
 	}
 
 	@Override
-	public FlightSchedule changeFlightStatus(long flightId, int status) {
-		Optional<FlightSchedule> existing = flightRepo.findByFlightId(flightId);
+	public FlightSchedule changeFlightStatus(String flightCode, int status) {
+		Optional<FlightSchedule> existing = flightRepo.findByFlightCode(flightCode);
 		if(existing.isEmpty()) {
-			throw new NotFoundException("Flight id "+flightId+" was not found in the DB.");
+			throw new NotFoundException("Flight code "+flightCode+" was not found in the DB.");
 		}
 		
 		Optional<FlightStatus> fStatus = statusRepo.findById(status);
@@ -70,41 +73,34 @@ public class FlightScheduleServiceImpl implements FlightScheduleService {
 	public FlightSchedule createFlight(FlightScheduleDto flight) {
 		FlightSchedule newFlight = new FlightSchedule();
 		System.out.println("Flight Rdeq data:: "+flight.toString());
+		newFlight.setFlightCode(flight.getFlightCode());
 		newFlight.setAirline(airlineRepo.findById(flight.getAirlineId()).get());
 		newFlight.setSource(flight.getSource());
 		newFlight.setDestination(flight.getDestination());
-		newFlight.setPrice(flight.getPrice());
-		try {
-			newFlight.setScheduledFor(parse.parse(flight.getScheduledFor()));
-		} catch (ParseException e) {
-			e.printStackTrace();
+		newFlight.setFlightClass(flight.getFlightClass());
+		newFlight.setSta(flight.getSta());
+		newFlight.setEta(flight.getEta());
+		if(flight.getStatus().getId() == Constants.DELAYED.getId()) {
+			newFlight.setEta(Utils.addHoursToDate(flight.getEta(), 2));
 		}
-		newFlight.setScheduledTimeHour(flight.getScheduledTimeHour());
-		newFlight.setScheduledTimeMinutes(flight.getScheduledTimeMinutes());
-		newFlight.setPrice(flight.getPrice());
-		newFlight.setStatus(statusRepo.findById(flight.getStatusId()).get());
+		newFlight.setFlightHours(flight.getFlightHours());
+		newFlight.setStatus(statusRepo.findById(flight.getStatus().getId()).get());
 		return persistFlight(newFlight, "Flight created successfully");
 	}
 
 	@Override
 	public FlightSchedule editFlight(FlightScheduleDto flight) {
-		Optional<FlightSchedule> existing = flightRepo.findByFlightId(flight.getFlightId());
+		Optional<FlightSchedule> existing = flightRepo.findByFlightCode(flight.getFlightCode());
 		if(existing.isEmpty()) {
-			throw new NotFoundException("Flight id "+flight.getFlightId()+" was not found in the DB.");
+			throw new NotFoundException("Flight code "+flight.getFlightCode()+" was not found in the DB.");
 		}
 		existing.get().setAirline(airlineRepo.findById(flight.getAirlineId()).get());
 		existing.get().setSource(flight.getSource());
 		existing.get().setDestination(flight.getDestination());
-		existing.get().setPrice(flight.getPrice());
-		try {
-			existing.get().setScheduledFor(parse.parse(flight.getScheduledFor()));
-		} catch (ParseException e) {
-			e.printStackTrace();
-		}
-		existing.get().setScheduledTimeHour(flight.getScheduledTimeHour());
-		existing.get().setScheduledTimeMinutes(flight.getScheduledTimeMinutes());
-		existing.get().setPrice(flight.getPrice());
-		existing.get().setStatus(statusRepo.findById(flight.getStatusId()).get());
+		existing.get().setFlightClass(flight.getFlightClass());
+		existing.get().setSta(flight.getSta());
+		existing.get().setEta(flight.getEta());
+		existing.get().setStatus(statusRepo.findById(flight.getStatus().getId()).get());
 		return persistFlight(existing.get(), "Flight schedule edited successfully.");
 	}
 
@@ -112,6 +108,7 @@ public class FlightScheduleServiceImpl implements FlightScheduleService {
 		try {
 			return flightRepo.save(existing);
 		} catch(Exception e) {
+			e.printStackTrace();
 			throw new SomethingWentWrong("Could not persist flight!");
 		}
 	}
@@ -119,11 +116,39 @@ public class FlightScheduleServiceImpl implements FlightScheduleService {
 	@Override
 	public List<FlightSchedule> searchFlights(SearchFlightParams params) {
 		try {
-			return flightRepo.findByScheduledForAndSourceIgnoreCaseAndDestinationIgnoreCaseAndAirlineAirlineStatusId(
+			return flightRepo.findByStaAndSourceIgnoreCaseAndDestinationIgnoreCaseAndAirlineAirlineStatusId(
 					parse.parse(params.getDate()),
 					params.getSource(), params.getDestination(), 101).get();
 		} catch (ParseException e) {
 			throw new SomethingWentWrong("Could not find flight!");
 		}
 	}
+
+	@Override
+	public FlightStatus createFlightStatus(FlightStatus status) {
+		System.out.println("Inside createFlightStatus");
+		return statusRepo.save(status);
+	}
+
+	@Override
+	public FlightSchedule changeStatus(FlightScheduleDto flight) {
+		System.out.println("Inside changeStatus");
+		try {
+			Optional<FlightSchedule> existing = flightRepo.findByFlightCode(flight.getFlightCode());
+			if(existing.isEmpty()) {
+				throw new NotFoundException("Flight code "+flight.getFlightCode()+" was not found in the DB.");
+			}
+			FlightSchedule request = existing.get();
+			if(flight.getStatus().getId() == Constants.DELAYED.getId()) {
+				request.setEta(Utils.addHoursToDate(request.getEta(), 2));
+			}
+			request.setStatus(Constants.getFlightStatus(flight.getStatus().getId()));
+			return flightRepo.save(request);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new SomethingWentWrong(e.getMessage());
+		}
+	}
+	
+	
 }
