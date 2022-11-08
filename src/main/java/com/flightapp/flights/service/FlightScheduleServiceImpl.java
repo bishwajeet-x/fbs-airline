@@ -2,6 +2,7 @@ package com.flightapp.flights.service;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,7 +18,6 @@ import com.flightapp.exception.NotFoundException;
 import com.flightapp.exception.SomethingWentWrong;
 import com.flightapp.flights.dto.FlightScheduleDto;
 import com.flightapp.flights.dto.SearchFlightParams;
-import com.flightapp.flights.entity.FlightClass;
 import com.flightapp.flights.entity.FlightSchedule;
 import com.flightapp.flights.entity.FlightStatus;
 import com.flightapp.flights.repo.FlightScheduleRepo;
@@ -46,11 +46,16 @@ public class FlightScheduleServiceImpl implements FlightScheduleService {
 
 	@Override
 	public FlightSchedule fetchFlightByCode(String flightCode) {
-		Optional<FlightSchedule> flight = flightRepo.findByFlightCode(flightCode);
-		if(flight.isEmpty()) {
-			throw new NotFoundException("Flight code "+flightCode+" was not found in the DB.");
+		try {
+			Optional<FlightSchedule> flight = flightRepo.findByFlightCode(flightCode);
+			if(flight.isEmpty()) {
+				throw new NotFoundException("Flight code "+flightCode+" was not found in the DB.");
+			}
+			return flight.get();
+		} catch(Exception e) {
+			e.printStackTrace();
+			throw new SomethingWentWrong("Could not fetch flight!");
 		}
-		return flight.get();
 	}
 
 	@Override
@@ -115,11 +120,23 @@ public class FlightScheduleServiceImpl implements FlightScheduleService {
 
 	@Override
 	public List<FlightSchedule> searchFlights(SearchFlightParams params) {
+		System.err.println(params.toString());
 		try {
-			return flightRepo.findByStaAndSourceIgnoreCaseAndDestinationIgnoreCaseAndAirlineAirlineStatusId(
-					parse.parse(params.getDate()),
-					params.getSource(), params.getDestination(), 101).get();
-		} catch (ParseException e) {
+			List<FlightSchedule> searched = flightRepo.findBySourceIgnoreCaseAndDestinationIgnoreCaseAndAirlineAirlineStatusId(
+					params.getSource().trim(), params.getDestination().trim(), 101).get();
+			SimpleDateFormat format = new SimpleDateFormat("yyyy/dd/MM");
+			List<FlightSchedule> response = new ArrayList<FlightSchedule>();
+			searched.forEach(flight -> {
+				System.err.println(format.format(flight.getSta())+" "+(params.getDate()));
+				if(format.format(flight.getSta()).equals(params.getDate())) {
+					response.add(flight);
+				}
+			});
+
+			System.out.println(response);
+			return response;
+		} catch (Exception e) {
+			e.printStackTrace();
 			throw new SomethingWentWrong("Could not find flight!");
 		}
 	}

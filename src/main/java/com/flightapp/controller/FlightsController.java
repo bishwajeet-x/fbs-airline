@@ -33,7 +33,7 @@ public class FlightsController {
 
 	@GetMapping("/search")
 	public ResponseEntity<FlightSchedule> fetchFlightById(@RequestParam("id") String flightCode) {
-		System.out.println("Inside fetchAllFlights");
+		System.out.println("Inside fetchAllFlights "+flightCode);
 		return ResponseEntity.ok(flightService.fetchFlightByCode(flightCode));
 	}
 	

@@ -15,4 +15,6 @@ public interface FlightScheduleRepo extends JpaRepository<FlightSchedule, String
 			Date parse, String source, String destination, int statusId);
 	//public Optional<FlightSchedule> findByFlightScheduleFlightCode(String flightCode);
 	public Optional<FlightSchedule> findByFlightCode(String flightCode);
+	public Optional<List<FlightSchedule>> findBySourceIgnoreCaseAndDestinationIgnoreCaseAndAirlineAirlineStatusId(
+			String source, String destination, int i);
 }
